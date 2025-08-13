@@ -1,12 +1,13 @@
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.detail import DetailView
 from django.views import View
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.forms import inlineformset_factory
 
 from .models import StoragePlace, Room, GeoPlace, Item
-from .forms import ItemForm
+from .forms import ItemCatalogForm, ItemForm
 
 # Create your views here.
 class GeoPlaceDetailView(DetailView):
@@ -50,12 +51,25 @@ class StoragePlaceCatalogItemsView(View):
     Show the existing items in the place, and present forms to allow adding one or
     more items at once.
     """
-    ItemInlineFormSet = inlineformset_factory(StoragePlace, Item, ItemForm)
+
+    model = StoragePlace
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
     def get(self, request, pk):
         place_instance = StoragePlace.objects.get(pk=pk)
-        formset = self.ItemInlineFormSet(instance=place_instance)
-        return HttpResponse(formset)
+        form = ItemCatalogForm()
+
+        return render(request, "item_locator/catalog.html", {"place": place_instance, "form": form})
+
+    def post(self, request, pk):
+        form = ItemCatalogForm(request.POST)
+        if form.is_valid():
+            name = request.POST["name"]
+            desc = request.POST["description"]
+            place_instance = StoragePlace.objects.get(pk=pk)
+            item = Item(name = name, description = desc, place = place_instance)
+            item.save()
+
+            return HttpResponseRedirect(reverse("catalog", args=[pk]))

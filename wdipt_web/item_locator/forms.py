@@ -18,3 +18,9 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         fields = ["name", "description", "place"]
+
+class ItemCatalogForm(forms.ModelForm):
+
+    class Meta:
+        model = Item
+        fields = ["name", "description"]
