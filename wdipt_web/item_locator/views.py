@@ -36,6 +36,9 @@ class StoragePlaceDetailView(DetailView):
         context["items"] = self.object.item_set.all()
         return context
 
+class ItemDetailView(DetailView):
+    model = Item
+
 class StoragePlaceCreateView(CreateView):
     model = StoragePlace
     fields = ["name", "description", "room"]
